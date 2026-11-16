@@ -11,25 +11,25 @@ return new class extends Migration
      */
     public function up(): void
     {
-        
-Schema::create('rentals', function (Blueprint $table) {
-    $table->id();
 
-    $table->foreignId('user_id')
-          ->constrained()
-          ->cascadeOnDelete();
+        Schema::create('rentals', function (Blueprint $table) {
+            $table->id();
 
-    $table->foreignId('laptop_id')
-          ->constrained()
-          ->restrictOnDelete();
+            $table->foreignId('user_id')
+                ->constrained()
+                ->cascadeOnDelete();
 
-    $table->date('start_date');
-    $table->date('end_date');
+            $table->foreignId('laptop_id')
+                ->constrained()
+                ->restrictOnDelete();
 
-    $table->string('status')->default('pending');
+            $table->date('start_date');
+            $table->date('end_date');
 
-    $table->timestamps();
-});
+            $table->string('status')->default('pending');
+
+            $table->timestamps();
+        });
 
     }
 

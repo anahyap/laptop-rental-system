@@ -10,13 +10,22 @@
                 <flux:sidebar.collapse class="lg:hidden" />
             </flux:sidebar.header>
 
-            <flux:sidebar.nav>
-                <flux:sidebar.group :heading="__('Platform')" class="grid">
-                    <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                        {{ __('Dashboard') }}
-                    </flux:sidebar.item>
-                </flux:sidebar.group>
-            </flux:sidebar.nav>
+          <flux:sidebar.nav>
+    <flux:sidebar.group :heading="__('Platform')" class="grid">
+        <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
+            {{ __('Dashboard') }}
+        </flux:sidebar.item>
+
+        <flux:sidebar.item icon="computer-desktop" :href="route('rentals.index')" :current="request()->routeIs('rentals.index')" wire:navigate>
+            {{ __('Rentals') }}
+        </flux:sidebar.item>
+
+        <flux:sidebar.item icon="plus-circle" :href="route('rentals.create')" :current="request()->routeIs('rentals.create')" wire:navigate>
+            {{ __('Create Rental') }}
+        </flux:sidebar.item>
+    </flux:sidebar.group>
+</flux:sidebar.nav>
+
 
             <flux:spacer />
 

@@ -34,7 +34,7 @@ class laptopcontroller extends Controller
             'brand' => 'required|string',
             'model' => 'required|string',
             'serial_number' => 'required|string',
-            'daily_rate' => 'required|float',
+            'daily_rate' => 'required|numeric',
             'is_available' => 'required|boolean',
         ]);
 

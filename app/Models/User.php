@@ -60,10 +60,8 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             : $initials;
     }
 
-
-public function rentals()
-{
-    return $this->hasMany(Rental::class);
-}
-
+    public function rentals()
+    {
+        return $this->hasMany(Rental::class);
+    }
 }
