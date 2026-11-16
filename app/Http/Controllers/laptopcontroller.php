@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\LaptopInventory;
+use App\Models\laptop;
 use Illuminate\Http\Request;
 
 class laptopcontroller extends Controller
@@ -12,11 +12,9 @@ class laptopcontroller extends Controller
      */
     public function index()
     {
-        $items = LaptopInventory::all();
-	$totalCount = LaptopInventory::count();
-	$availableCount = LaptopInventory::where('is_available', true)->count();
+        $items = laptop::all();
 
-        return view('laptop.index', compact('items', 'totalCount', 'availableCount'));
+        return view('laptops.index', compact('items'));
     }
 
     /**
@@ -24,7 +22,7 @@ class laptopcontroller extends Controller
      */
     public function create()
     {
-        return view('laptop.create');
+        return view('laptops.create');
     }
 
     /**
@@ -35,57 +33,57 @@ class laptopcontroller extends Controller
         $validated = $request->validate([
             'brand' => 'required|string',
             'model' => 'required|string',
-            'serial_number' => 'required|string|unique:laptops,serial_number',
-            'daily_rate' => 'required|numeric',
+            'serial_number' => 'required|string',
+            'daily_rate' => 'required|float',
             'is_available' => 'required|boolean',
         ]);
 
-        LaptopInventory::create($validated);
+        laptop::create($validated);
 
-        return redirect()->route('laptop.index');
+        return redirect()->route('laptops.index');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(LaptopInventory $laptop)
+    public function show(laptop $laptop)
     {
-        return view('laptop.show', compact('laptop'));
+        return view('laptops.show', compact('laptop'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(LaptopInventory $laptop)
+    public function edit(laptop $laptop)
     {
-        return view('laptop.edit', compact('laptop'));
+        return view('laptops.edit', compact('laptop'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, LaptopInventory $laptop)
+    public function update(Request $request, laptop $laptop)
     {
         $validated = $request->validate([
             'brand' => 'required|string',
             'model' => 'required|string',
-            'serial_number' => 'required|string|unique:laptops,serial_number,' . $laptop->id,
+            'serial_number' => 'required|string',
             'daily_rate' => 'required|numeric',
             'is_available' => 'required|boolean',
         ]);
 
         $laptop->update($validated);
 
-        return redirect()->route('laptop.index');
+        return redirect()->route('laptops.index');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(LaptopInventory $laptop)
+    public function destroy(laptop $laptop)
     {
         $laptop->delete();
 
-        return redirect()->route('laptop.index');
+        return redirect()->route('laptops.index');
     }
 }

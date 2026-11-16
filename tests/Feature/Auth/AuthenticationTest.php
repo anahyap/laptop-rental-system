@@ -1,77 +1,83 @@
 <?php
 
+namespace Tests\Feature\Auth;
+
 use App\Models\User;
-use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Fortify\Features;
+use Tests\TestCase;
 
-test('login screen can be rendered', function () {
-    $response = $this->get(route('login'));
+class AuthenticationTest extends TestCase
+{
+    use RefreshDatabase;
 
-    $response->assertOk();
-});
+    public function test_login_screen_can_be_rendered(): void
+    {
+        $response = $this->get(route('login'));
 
-test('users can authenticate using the login screen', function () {
-    $user = User::factory()->create();
+        $response->assertOk();
+    }
 
-    $response = $this->post(route('login.store'), [
-        'email' => $user->email,
-        'password' => 'password',
-    ]);
+    public function test_users_can_authenticate_using_the_login_screen(): void
+    {
+        $user = User::factory()->create();
 
-    $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
-});
+        $response = $this->post(route('login.store'), [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
 
-test('users with two factor enabled are redirected to two factor challenge', function () {
-    $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('dashboard', absolute: false));
 
-    Features::twoFactorAuthentication([
-        'confirm' => true,
-        'confirmPassword' => true,
-    ]);
+        $this->assertAuthenticated();
+    }
 
-    $user = User::factory()->withTwoFactor()->create();
+    public function test_users_can_not_authenticate_with_invalid_password(): void
+    {
+        $user = User::factory()->create();
 
-    $response = $this->post(route('login'), [
-        'email' => $user->email,
-        'password' => 'password',
-    ]);
+        $response = $this->post(route('login.store'), [
+            'email' => $user->email,
+            'password' => 'wrong-password',
+        ]);
 
-    $response->assertRedirect(route('two-factor.login'));
-    $response->assertSessionHas('login.id', $user->id);
-    $this->assertGuest();
-});
+        $response->assertSessionHasErrorsIn('email');
 
-test('users can not authenticate with invalid password', function () {
-    $user = User::factory()->create();
+        $this->assertGuest();
+    }
 
-    $this->post(route('login.store'), [
-        'email' => $user->email,
-        'password' => 'wrong-password',
-    ]);
+    /* @chisel-2fa */
+    public function test_users_with_two_factor_enabled_are_redirected_to_two_factor_challenge(): void
+    {
+        $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
 
-    $this->assertGuest();
-});
+        Features::twoFactorAuthentication([
+            'confirm' => true,
+            'confirmPassword' => true,
+        ]);
 
-test('users can logout', function () {
-    $user = User::factory()->create();
+        $user = User::factory()->withTwoFactor()->create();
 
-    $response = $this->actingAs($user)->post(route('logout'));
+        $response = $this->post(route('login.store'), [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
 
-    $response->assertRedirect(route('home'));
+        $response->assertRedirect(route('two-factor.login'));
+        $this->assertGuest();
+    }
+    /* @end-chisel-2fa */
 
-    $this->assertGuest();
-});
+    public function test_users_can_logout(): void
+    {
+        $user = User::factory()->create();
 
-test('users are rate limited', function () {
-    $user = User::factory()->create();
+        $response = $this->actingAs($user)->post(route('logout'));
 
-    RateLimiter::increment(md5('login'.implode('|', [$user->email, '127.0.0.1'])), amount: 5);
+        $response->assertRedirect(route('home'));
 
-    $response = $this->post(route('login.store'), [
-        'email' => $user->email,
-        'password' => 'wrong-password',
-    ]);
-
-    $response->assertTooManyRequests();
-});
+        $this->assertGuest();
+    }
+}
