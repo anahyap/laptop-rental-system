@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\laptop;
+use App\Models\LaptopInventory;
 use Illuminate\Http\Request;
 
 class laptopcontroller extends Controller
@@ -12,9 +12,11 @@ class laptopcontroller extends Controller
      */
     public function index()
     {
-        $items = laptop::all();
+        $items = LaptopInventory::all();
+	$totalCount = LaptopInventory::count();
+	$availableCount = LaptopInventory::where('is_available', true)->count();
 
-        return view('laptop.index', compact('items'));
+        return view('laptop.index', compact('items', 'totalCount', 'availableCount'));
     }
 
     /**
@@ -33,12 +35,12 @@ class laptopcontroller extends Controller
         $validated = $request->validate([
             'brand' => 'required|string',
             'model' => 'required|string',
-            'serial_number' => 'required|string',
+            'serial_number' => 'required|string|unique:laptops,serial_number',
             'daily_rate' => 'required|numeric',
             'is_available' => 'required|boolean',
         ]);
 
-        laptop::create($validated);
+        LaptopInventory::create($validated);
 
         return redirect()->route('laptop.index');
     }
@@ -46,7 +48,7 @@ class laptopcontroller extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(laptop $laptop)
+    public function show(LaptopInventory $laptop)
     {
         return view('laptop.show', compact('laptop'));
     }
@@ -54,7 +56,7 @@ class laptopcontroller extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(laptop $laptop)
+    public function edit(LaptopInventory $laptop)
     {
         return view('laptop.edit', compact('laptop'));
     }
@@ -62,12 +64,12 @@ class laptopcontroller extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, laptop $laptop)
+    public function update(Request $request, LaptopInventory $laptop)
     {
         $validated = $request->validate([
             'brand' => 'required|string',
             'model' => 'required|string',
-            'serial_number' => 'required|string',
+            'serial_number' => 'required|string|unique:laptops,serial_number,' . $laptop->id,
             'daily_rate' => 'required|numeric',
             'is_available' => 'required|boolean',
         ]);
@@ -80,7 +82,7 @@ class laptopcontroller extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(laptop $laptop)
+    public function destroy(LaptopInventory $laptop)
     {
         $laptop->delete();
 
